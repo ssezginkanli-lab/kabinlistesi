@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dondurma Dolabı Sevkiyat & Operasyon</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .tap-highlight { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between tap-highlight">
+
+    <!-- Top Mobile Header -->
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
+                    <i class="fa-solid fa-snowflake text-cyan-300 text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wide leading-tight">4 MD Dolap Sevkiyat</h1>
+                    <p class="text-[10px] text-blue-200">Mobil Operasyon Paneli</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <button onclick="switchView('form')" id="navForm" class="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Yeni</span>
+                </button>
+                <button onclick="switchView('list')" id="navList" class="bg-blue-900/40 text-blue-200 hover:bg-blue-900/60 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span id="badgeCount" class="bg-cyan-400 text-slate-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold">0</span>
+                </button>
+                <button onclick="openAdminModal()" id="navAdmin" class="bg-amber-500/80 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1" title="Yönetici Paneli">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container (Mobile First max-w-md) -->
+    <main class="max-w-md w-full mx-auto p-4 flex-grow mb-16">
+        
+        <!-- FORM VIEW -->
+        <div id="formSection" class="space-y-4">
+            
+            <!-- Welcome / Status Card -->
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-md">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[11px] font-semibold bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Hızlı Talep Girişi</span>
+                        <h2 class="text-base font-bold mt-1">Yeni Sevkiyat Kaydı Oluştur</h2>
+                    </div>
+                    <i class="fa-solid fa-truck-fast text-2xl text-blue-200 opacity-80"></i>
+                </div>
+                <p class="text-xs text-blue-100 mt-2">Bölge seçtiğinizde ilgili bölge sevkiyatçısı otomatik olarak atanacaktır.</p>
+            </div>
+
+            <!-- Main Input Form Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 space-y-4">
+                
+                <form id="dispatchForm" onsubmit="saveDispatch(event)" class="space-y-3.5">
+
+                    <!-- 0. OTOMATİK TARİH (Sadece Okunabilir) -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                            <i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i> Talep Tarihi
+                        </label>
+                        <input type="text" id="reqDate" readonly class="w-full bg-slate-200/70 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-600 outline-none cursor-not-allowed">
+                    </div>
+                    
+                    <!-- 1. BÖLGE SEÇİMİ -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                            <i class="fa-solid fa-map-location-dot text-blue-600 mr-1"></i> ASU-RUT Bölgesi <span class="text-red-500">*</span>
+                        </label>
+                        <select id="regionSelect" required onchange="updateDispatcherInfo()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs md:text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition">
+                            <option value="">Bölge Seçiniz...</option>
+                            <option value="BÖLGE 1: SELİM ARSLAN">BÖLGE 1: SELİM ARSLAN </option>
+                            <option value="BÖLGE 2: SERKAN PEHLİVAN ">BÖLGE 2: SERKAN PEHLİVAN</option>
+                            <option value="BÖLGE 3: YASİN ERCAN">BÖLGE 3: YASİN ERCAN</option>
+                            <option value="BÖLGE 4: ÖZGÜR&İSMAİL">BÖLGE 4: ÖZGÜR&İSMAİL</option>
+                        </select>
+                    </div>
+
+                    <!-- Otomatik Atanan Sevkiyatçı Bilgi Kutusu -->
+                    <div id="dispatcherBox" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase font-semibold text-blue-600">Sorumlu Sevkiyatçı</p>
+                                <p id="dispatcherName" class="text-xs font-bold text-slate-900">-</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] bg-blue-200 text-blue-800 font-semibold px-2 py-0.5 rounded">Otomatik Atandı</span>
+                    </div>
+
+                    <!-- 2. SATIŞ ELEMANI SEÇİMİ -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                            <i class="fa-solid fa-user-tie text-blue-600 mr-1"></i> Satış Elemanı <span class="text-red-500">*</span>
+                        </label>
+                        <select id="salesRep" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition">
+                            <option value="">Satış Temsilcisi Seçin...</option>
+                            <option value="ALO">ALO</option>
+                            <option value="ARNAVUTKÖY">ARNAVUTKÖY</option>
+                            <option value="AVCILAR">AVCILAR</option>
+                            <option value="BAĞCILAR">BAĞCILAR</option>
+                            <option value="BAKIRKÖY">BAKIRKÖY</option>
+                            <option value="BAŞAKŞEHİR">BAŞAKŞEHİR</option>
+                            <option value="BAHÇEŞEHİR">BAHÇEŞEHİR</option>
+                            <option value="BEBEK">BEBEK</option>
+                            <option value="BEŞİKTAŞ">BEŞİKTAŞ</option>
+                            <option value="BEYLİKDÜZÜ">BEYLİKDÜZÜ</option>
+                            <option value="BÜYÜKÇEKMECE">BÜYÜKÇEKMECE</option>
+                            <option value="ESENYURT">ESENYURT</option>
+                            <option value="EYÜP">EYÜP</option>
+                            <option value="FATİH">FATİH</option>
+                            <option value="FLORYA">FLORYA</option>
+                            <option value="GOP">GOP</option>
+                            <option value="HALKALI">HALKALI</option>
+                            <option value="SARIYER">SARIYER</option>
+                            <option value="SURİÇİ">SURİÇİ</option>
+                            <option value="ŞİŞLİ">ŞİŞLİ</option>
+                            <option value="TAKSİM">TAKSİM</option>
+                            <option value="YÖNETİCİ">YÖNETİCİ</option>
+                        </select>
+                    </div>
+
+                    <!-- 3. TALEP NO & MÜŞTERİ NO -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Talep No</label>
+                            <input type="text" id="reqNo" placeholder="Örn: 9841" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Müşteri No <span class="text-red-500">*</span></label>
+                            <input type="text" id="custNo" required placeholder="Örn: 0106374" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-semibold font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                        </div>
+                    </div>
+
+                    <!-- 4. MÜŞTERİ ÜNVANI - TABELA ADI -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                            Müşteri Ünvanı / Tabela Adı <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="custName" required placeholder="Örn: TEZCAN - PİLİÇ DONDURMA" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs uppercase font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                    </div>
+
+                    <!-- 5. DOLAP DIŞ GÖRÜNTÜSÜ (STİCKER) -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Dolap Dış Görüntüsü (Sticker)</label>
+                        <select id="sticker" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                            <option value="AlGİDA">AlGİDA</option>
+                            <option value="CDO">CDO</option>
+                            <option value="MARAŞ">MARAŞ</option>
+                        </select>
+                    </div>
+
+                    <!-- 6. GİDECEK KABİN & DURUM -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Gidecek Kabin</label>
+                            <select id="outgoingCabinet" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                                <option value="">Seçiniz...</option>
+                                <option value="100 Lt ">100 Lt </option>
+                                <option value="200 Lt ">200 Lt </option>
+                                <option value="300 Lt ">300 Lt </option>
+                                <option value="400 Lt ">400 Lt </option>
+                                <option value="500 Lt">500 Lt</option>
+                                <option value="600 Lt ">600 Lt </option>
+                                <option value="DİKEY ">DİKEY </option>
+                                <option value="TEK KAPILI MİNİ ">TEK KAPILI MİNİ </option>
+                                <option value="800 Lt ">800 Lt </option>
+                                <option value="5 GÖZ">5 GÖZ</option>
+                                <option value="7 GÖZ ">7 GÖZ </option>
+                                <option value="10 GÖZ  ">10 GÖZ </option>
+                                <option value="14 GÖZ">14 GÖZ</option>
+                                <option value="18 GÖZ ">18 GÖZ</option>
+                                <option value="ANKA">ANKA</option>
+                                <option value="FIÇI">FIÇI</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Dolap Durumu</label>
+                            <select id="cabinetCondition" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                                <option value="YENİ" class="text-green-600">YENİ</option>
+                                <option value="KULLANILMIŞ" class="text-amber-600">KULLANILMIŞ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 7. ALINACAK KABİN -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                            <i class="fa-solid fa-rotate-left text-blue-600 mr-1"></i> Alınacak Kabin (Geri Alınacak)
+                        </label>
+                        <select id="incomingCabinet" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs md:text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition">
+                            <option value="">Alınacak Kabin Seçiniz...</option>
+                            <option value="Yok (Yeni Kurulum)">Yok (Yeni Kurulum)</option>
+                            <option value="100 Lt ">100 Lt </option>
+                            <option value="200 Lt ">200 Lt </option>
+                            <option value="300 Lt ">300 Lt </option>
+                            <option value="400 Lt ">400 Lt </option>
+                            <option value="500 Lt">500 Lt</option>
+                            <option value="600 Lt ">600 Lt </option>
+                            <option value="DİKEY ">DİKEY </option>
+                            <option value="TEK KAPILI MİNİ ">TEK KAPILI MİNİ </option>
+                            <option value="800 Lt ">800 Lt </option>
+                            <option value="5 GÖZ">5 GÖZ</option>
+                            <option value="7 GÖZ ">7 GÖZ </option>
+                            <option value="10 GÖZ  ">10 GÖZ </option>
+                            <option value="14 GÖZ">14 GÖZ</option>
+                            <option value="18 GÖZ ">18 GÖZ</option>
+                            <option value="ANKA">ANKA</option>
+                            <option value="FIÇI">FIÇI</option>
+                            <option value="Arızalı / Hurda Dolap">Arızalı / Hurda Dolap</option>
+                        </select>
+                    </div>
+
+                    <!-- GİDECEK MALZEME -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                            <i class="fa-solid fa-box-open text-blue-600 mr-1"></i> Gidecek Malzeme (Açıklama)
+                        </label>
+                        <input type="text" id="outgoingMaterial" placeholder="Örn: Şemsiye, Banner, 2 adet sepet vb..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                    </div>
+
+                    <!-- 8. AÇIKLAMA ALANI -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bilgi, Açıklama, Not</label>
+                        <textarea id="notes" rows="2" placeholder="Özel adres tarifi, kat bilgisi vb..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none"></textarea>
+                    </div>
+
+                    <!-- KAYDET BUTONU -->
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-150 flex items-center justify-center space-x-2 text-xs uppercase tracking-wider">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Sevkiyat Talebini Kaydet</span>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- LIST / DASHBOARD VIEW -->
+        <div id="listSection" class="hidden space-y-4">
+            
+            <!-- Bölge Filtreleme Butonları -->
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">Bölgeye Göre Filtrele:</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="filterRegion('ALL')" id="filter-ALL" class="bg-blue-600 text-white font-semibold py-2 px-2.5 rounded-xl transition text-center shadow-xs">Tümü (<span id="countAll">0</span>)</button>
+                    <button onclick="filterRegion('1')" id="filter-1" class="bg-slate-100 text-slate-700 font-medium py-2 px-2.5 rounded-xl transition text-center">Bölge 1</button>
+                    <button onclick="filterRegion('2')" id="filter-2" class="bg-slate-100 text-slate-700 font-medium py-2 px-2.5 rounded-xl transition text-center">Bölge 2</button>
+                    <button onclick="filterRegion('3')" id="filter-3" class="bg-slate-100 text-slate-700 font-medium py-2 px-2.5 rounded-xl transition text-center">Bölge 3</button>
+                    <button onclick="filterRegion('4')" id="filter-4" class="bg-slate-100 text-slate-700 font-medium py-2 px-2.5 rounded-xl transition text-center col-span-2">Bölge 4</button>
+                </div>
+            </div>
+
+            <!-- Kayıt Kartları Listesi -->
+            <div id="cardsContainer" class="space-y-3">
+                <!-- Dinamik Kartlar Buraya Gelecek -->
+            </div>
+
+            <!-- Boş Durum -->
+            <div id="emptyListState" class="hidden text-center py-12 text-slate-400">
+                <i class="fa-solid fa-clipboard-list text-3xl mb-2"></i>
+                <p class="text-xs">Bu kriterde kayıt bulunmuyor.</p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Yönetici Giriş / İşlem Modalı -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-xs">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-800">Yönetici Paneli</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Şifre Alanı -->
+            <div id="adminLoginArea" class="space-y-3">
+                <p class="text-xs text-slate-500">Excel raporu indirmek ve yönetici işlemlerine erişmek için şifre giriniz.</p>
+                <input type="password" id="adminPass" placeholder="Yönetici Şifresi (Örn: 1234)" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                <button onclick="checkAdminLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-sm transition">
+                    Giriş Yap
+                </button>
+            </div>
+
+            <!-- Yönetim İşlemleri (Giriş Başarılıysa Görünür) -->
+            <div id="adminPanelActions" class="hidden space-y-3">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-center justify-between">
+                    <span>Yetkilendirme Başarılı</span>
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                </div>
+                <button onclick="exportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow-sm transition">
+                    <i class="fa-solid fa-file-excel text-sm"></i>
+                    <span>Tüm Kayıtları Excel İndir (Kenarlıklı)</span>
+                </button>
+                <button onclick="clearAll()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Tüm Veritabanını Temizle</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alt Navigasyon / Bilgi Çubuğu -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-[10px] text-slate-500 fixed bottom-0 left-0 right-0 z-40 shadow-inner">
+        <p>4 Bölgeli Dondurma Operasyon Sistemi &bull; <span id="activeDispatcherFooter" class="font-semibold text-blue-600">Sevkiyat Ekibi Aktif</span></p>
+    </footer>
+
+    <!-- JavaScript Uygulama Mantığı -->
+    <script>
+        const dispatchers = {
+            "BÖLGE 1: SELİM ARSLAN": "Selim Arslan (Sevkiyat Sorumlusu)",
+            "BÖLGE 2: SERKAN PEHLİVAN ": "Serkan Pehlivan (Sevkiyat Sorumlusu)",
+            "BÖLGE 3: YASİN ERCAN": "Yasin Ercan (Sevkiyat Sorumlusu)",
+            "BÖLGE 4: ÖZGÜR&İSMAİL": "Özgür & İsmail (Sevkiyat Sorumlusu)"
+        };
+
+        let records = JSON.parse(localStorage.getItem('dispatchRecordsV4')) || [];
+        let currentFilter = 'ALL';
+
+        function initApp() {
+            const today = new Date().toLocaleDateString('tr-TR');
+            document.getElementById('reqDate').value = today;
+            updateBadge();
+            renderCards();
+        }
+
+        function switchView(view) {
+            const formSec = document.getElementById('formSection');
+            const listSec = document.getElementById('listSection');
+            const navForm = document.getElementById('navForm');
+            const navList = document.getElementById('navList');
+
+            if (view === 'form') {
+                formSec.classList.remove('hidden');
+                listSec.classList.add('hidden');
+                navForm.className = "bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1";
+                navList.className = "bg-blue-900/40 text-blue-200 hover:bg-blue-900/60 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1";
+            } else {
+                formSec.classList.add('hidden');
+                listSec.classList.remove('hidden');
+                navList.className = "bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1";
+                navForm.className = "bg-blue-900/40 text-blue-200 hover:bg-blue-900/60 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1";
+                renderCards();
+            }
+        }
+
+        function updateDispatcherInfo() {
+            const region = document.getElementById('regionSelect').value;
+            const box = document.getElementById('dispatcherBox');
+            const nameEl = document.getElementById('dispatcherName');
+            const footerEl = document.getElementById('activeDispatcherFooter');
+
+            if (region && dispatchers[region]) {
+                nameEl.innerText = dispatchers[region];
+                footerEl.innerText = dispatchers[region].split(' ')[0] + ' Sorumluluğunda';
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+                footerEl.innerText = 'Sevkiyat Ekibi Aktif';
+            }
+        }
+
+        function saveDispatch(e) {
+            e.preventDefault();
+
+            const region = document.getElementById('regionSelect').value;
+            const newRecord = {
+                id: Date.now(),
+                region: region,
+                dispatcher: dispatchers[region] || 'Atanmadı',
+                salesRep: document.getElementById('salesRep').value,
+                reqNo: document.getElementById('reqNo').value || '-',
+                custNo: document.getElementById('custNo').value,
+                custName: document.getElementById('custName').value.toUpperCase(),
+                sticker: document.getElementById('sticker').value,
+                outgoingCabinet: document.getElementById('outgoingCabinet').value || '-',
+                cabinetCondition: document.getElementById('cabinetCondition').value,
+                incomingCabinet: document.getElementById('incomingCabinet').value || '-',
+                outgoingMaterial: document.getElementById('outgoingMaterial').value || '-',
+                notes: document.getElementById('notes').value || '-',
+                date: document.getElementById('reqDate').value
+            };
+
+            records.push(newRecord);
+            localStorage.setItem('dispatchRecordsV4', JSON.stringify(records));
+
+            alert('Sevkiyat talebi ilgili bölge sevkiyatçısına başarıyla iletildi!');
+            document.getElementById('dispatchForm').reset();
+            document.getElementById('dispatcherBox').classList.add('hidden');
+            document.getElementById('reqDate').value = new Date().toLocaleDateString('tr-TR');
+            
+            updateBadge();
+            switchView('list');
+        }
+
+        function deleteRecord(id) {
+            if (confirm('Bu sevkiyat talebini silmek istediğinize emin misiniz?')) {
+                records = records.filter(r => r.id !== id);
+                localStorage.setItem('dispatchRecordsV4', JSON.stringify(records));
+                updateBadge();
+                renderCards();
+            }
+        }
+
+        function updateBadge() {
+            document.getElementById('badgeCount').innerText = records.length;
+            document.getElementById('countAll').innerText = records.length;
+        }
+
+        function filterRegion(regCode) {
+            currentFilter = regCode;
+            ['ALL', '1', '2', '3', '4'].forEach(code => {
+                const btn = document.getElementById(`filter-${code}`);
+                if (code === regCode) {
+                    btn.className = "bg-blue-600 text-white font-semibold py-2 px-2.5 rounded-xl transition text-center shadow-xs " + (code==='4'?'col-span-2':'');
+                } else {
+                    btn.className = "bg-slate-100 text-slate-700 font-medium py-2 px-2.5 rounded-xl transition text-center " + (code==='4'?'col-span-2':'');
+                }
+            });
+            renderCards();
+        }
+
+        function renderCards() {
+            const container = document.getElementById('cardsContainer');
+            const emptyState = document.getElementById('emptyListState');
+            container.innerHTML = '';
+
+            let filtered = records;
+            if (currentFilter !== 'ALL') {
+                filtered = records.filter(r => r.region.startsWith(`BÖLGE ${currentFilter}:`));
+            }
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.reverse().forEach((rec) => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-4 shadow-sm border border-slate-200/90 space-y-2.5 relative";
+                
+                const conditionBadge = rec.cabinetCondition === 'YENİ' 
+                    ? '<span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full">YENİ</span>'
+                    : '<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">KULLANILMIŞ</span>';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-2">
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wide bg-blue-50 px-2 py-0.5 rounded-md">${rec.region.split(':')[0]}</span>
+                            <h3 class="font-bold text-xs text-slate-900 mt-1 uppercase">${rec.custName}</h3>
+                        </div>
+                        <div class="flex flex-col items-end space-y-1">
+                            <span class="text-[10px] text-slate-400 font-mono">#${rec.custNo}</span>
+                            <button onclick="deleteRecord(${rec.id})" class="text-slate-400 hover:text-red-600 transition p-1 bg-slate-50 hover:bg-red-50 rounded" title="Kaydı Sil">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1">
+                        <div><strong class="text-slate-700">Talep No:</strong> ${rec.reqNo}</div>
+                        <div><strong class="text-slate-700">Satış Elemanı:</strong> ${rec.salesRep}</div>
+                        <div class="col-span-2"><strong class="text-slate-700">Sevkiyatçı:</strong> <span class="text-blue-700 font-medium">${rec.dispatcher}</span></div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-2.5 space-y-1 text-[11px] border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">Gidecek Kabin:</span>
+                            <span class="font-bold text-slate-800">${rec.outgoingCabinet} ${rec.outgoingCabinet !== '-' ? conditionBadge : ''}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">Sticker:</span>
+                            <span class="font-medium text-slate-700">${rec.sticker}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">Alınacak Kabin:</span>
+                            <span class="font-medium text-rose-700">${rec.incomingCabinet}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">Gidecek Malzeme:</span>
+                            <span class="font-medium text-indigo-700">${rec.outgoingMaterial}</span>
+                        </div>
+                    </div>
+
+                    ${rec.notes !== '-' ? `<p class="text-[11px] text-slate-500 italic bg-amber-50/50 p-2 rounded-lg border border-amber-100"><strong>Not:</strong> ${rec.notes}</p>` : ''}
+                    
+                    <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1">
+                        <span>Kayıt Tarihi: ${rec.date}</span>
+                        <span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>Sırada</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminPass').value = '';
+            document.getElementById('adminLoginArea').classList.remove('hidden');
+            document.getElementById('adminPanelActions').classList.add('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function checkAdminLogin() {
+            const pass = document.getElementById('adminPass').value;
+            if (pass === '1923') {
+                document.getElementById('adminLoginArea').classList.add('hidden');
+                document.getElementById('adminPanelActions').classList.remove('hidden');
+            } else {
+                alert('Hatalı yönetici şifresi!');
+            }
+        }
+
+        function clearAll() {
+            if (confirm('Tüm kayıtlar kalıcı olarak silinecek. Emin misiniz?')) {
+                records = [];
+                localStorage.removeItem('dispatchRecordsV4');
+                updateBadge();
+                renderCards();
+                closeAdminModal();
+            }
+        }
+
+        // HÜCRE KENARLIKLI VE KALIN BAŞLIKLI EXCEL DIŞA AKTARIM FONKSİYONU
+        function exportExcel() {
+            if (records.length === 0) {
+                alert('Dışa aktarılacak kayıt bulunmuyor.');
+                return;
+            }
+
+            let html = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        table { border-collapse: collapse; width: 100%; font-family: 'Calibri', Arial, sans-serif; font-size: 11pt; }
+                        th { background-color: #2563eb; color: #ffffff; font-weight: bold; border: 1px solid #000000; text-align: center; padding: 8px; }
+                        td { border: 1px solid #d3d3d3; padding: 6px; text-align: left; vertical-align: middle; }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bölge</th>
+                                <th>Sevkiyatçı</th>
+                                <th>Satış Temsilcisi</th>
+                                <th>Talep No</th>
+                                <th>Müşteri No</th>
+                                <th>Müşteri Ünvanı / Tabela</th>
+                                <th>Sticker</th>
+                                <th>Gidecek Kabin</th>
+                                <th>Dolap Durumu</th>
+                                <th>Alınacak Kabin</th>
+                                <th>Gidecek Malzeme</th>
+                                <th>Açıklama</th>
+                                <th>Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            records.forEach(r => {
+                html += `
+                    <tr>
+                        <td>${r.region}</td>
+                        <td>${r.dispatcher}</td>
+                        <td>${r.salesRep}</td>
+                        <td>${r.reqNo}</td>
+                        <td>${r.custNo}</td>
+                        <td>${r.custName}</td>
+                        <td>${r.sticker}</td>
+                        <td>${r.outgoingCabinet}</td>
+                        <td>${r.cabinetCondition}</td>
+                        <td>${r.incomingCabinet}</td>
+                        <td>${r.outgoingMaterial}</td>
+                        <td>${r.notes}</td>
+                        <td>${r.date}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `dondurma_sevkiyat_raporu_${new Date().toISOString().slice(0,10)}.xls`;
+            link.click();
+            closeAdminModal();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
